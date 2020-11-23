@@ -1,17 +1,14 @@
 from . import c2s
 from . import sus
 
-def sus_to_c2s(sus_objects, sus_ticks_per_measure = sus.SUS_TICKS_PER_MEASURE, c2s_ticks_per_beat = c2s.C2S_TICKS_PER_BEAT):
+def sus_to_c2s(sus_objects, sus_ticks_per_measure = sus.SUS_TICKS_PER_MEASURE, c2s_ticks_per_measure = c2s.C2S_TICKS_PER_MEASURE):
 
-    beats_per_measure = 4
     c2s_definitions = []
     c2s_notes = []
 
-    def sus_time_to_c2s_time(measures, ticks):
-        scaled_ticks = int((ticks / sus_ticks_per_measure) * c2s_ticks_per_beat * beats_per_measure)
-        additional_beats = scaled_ticks // c2s_ticks_per_beat
-        c2s_ticks = scaled_ticks % c2s_ticks_per_beat
-        return (measures * beats_per_measure + additional_beats, c2s_ticks) 
+    def sus_to_c2s_ticks(ticks):
+        scaled_ticks = int((ticks / sus_ticks_per_measure) * c2s_ticks_per_measure)
+        return scaled_ticks
 
     for obj in sus_objects:
         if isinstance(obj, sus.ShortNote):
@@ -50,7 +47,8 @@ def sus_to_c2s(sus_objects, sus_ticks_per_measure = sus.SUS_TICKS_PER_MEASURE, c
 
             note.lane = obj.lane
             note.width = obj.width
-            (note.beat, note.tick) = sus_time_to_c2s_time(obj.measure, obj.tick)
+            note.measure = obj.measure
+            note.tick = sus_to_c2s_ticks(obj.tick)
 
             c2s_notes.append(note)
             
@@ -69,10 +67,12 @@ def sus_to_c2s(sus_objects, sus_ticks_per_measure = sus.SUS_TICKS_PER_MEASURE, c
                 print("WARNING: Channel switches note kinds (goes from %s:%s to %s:%s at index %s) - Assuming intended END" % (obj.note_kind, obj.note_type, next_obj.note_kind, next_obj.note_type, next_idx))
                 continue
 
-            (start_beat, start_ticks) = sus_time_to_c2s_time(obj.measure, obj.tick)
-            (end_beat, end_ticks) = sus_time_to_c2s_time(next_obj.measure, next_obj.tick)
+            start_measure = obj.measure
+            start_ticks = sus_to_c2s_ticks(obj.tick)
+            end_measure = next_obj.measure
+            end_ticks = sus_to_c2s_ticks(next_obj.tick)
 
-            diff_ticks = ((end_beat - start_beat) * c2s_ticks_per_beat) + (end_ticks - start_ticks)
+            diff_ticks = ((end_measure - start_measure) * c2s_ticks_per_measure) + (end_ticks - start_ticks)
 
             if obj.note_kind == sus.LongNoteKind["SLIDE"]:
                 note = c2s.SlideNote()
@@ -87,7 +87,7 @@ def sus_to_c2s(sus_objects, sus_ticks_per_measure = sus.SUS_TICKS_PER_MEASURE, c
             elif obj.note_kind == sus.LongNoteKind["AIR_HOLD"]:
                 note = c2s.AirHold()
             
-            note.beat = start_beat
+            note.measure = start_measure
             note.tick = start_ticks
             note.lane = obj.lane
             note.width = obj.width
@@ -97,15 +97,17 @@ def sus_to_c2s(sus_objects, sus_ticks_per_measure = sus.SUS_TICKS_PER_MEASURE, c
 
         if isinstance(obj, sus.BpmChange):
             definition = c2s.BpmSetting()
-            (definition.beat, definition.tick) = sus_time_to_c2s_time(obj.measure, 0)
+            definition.measure = obj.measure
+            definition.tick = 0
             definition.bpm = obj.definition.tempo
             c2s_definitions.append(definition)
 
         if isinstance(obj, sus.BarLength):
             definition = c2s.MeterSetting()
-            (definition.beat, definition.tick) = sus_time_to_c2s_time(obj.measure, 0)
+            definition.measure = obj.measure
+            definition.tick = 0
             definition.signature = (obj.length, 4) 
             c2s_definitions.append(definition)
 
-    c2s_notes.sort(key=lambda note: note.beat + note.tick / c2s_ticks_per_beat)
+    c2s_notes.sort(key=lambda note: note.measure + note.tick / c2s_ticks_per_measure)
     return (c2s_definitions, c2s_notes)

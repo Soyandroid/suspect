@@ -1,27 +1,27 @@
 from abc import ABC, abstractmethod
 from enum import Enum, auto
 
-C2S_TICKS_PER_BEAT = 384
+C2S_TICKS_PER_MEASURE = 384
 
 class C2sObject(ABC):
-    beat = 0
+    measure = 0
     tick = 0
 
 class BpmSetting(C2sObject):
     bpm = 0.0
     def __str__(self):
-        return "BPM\t%s\t%s\t%s" % (self.beat, self.tick, self.bpm)
+        return "BPM\t%s\t%s\t%s" % (self.measure, self.tick, self.bpm)
 
 class MeterSetting(C2sObject):
     signature = (0, 0)
     def __str__(self):
-        return "MET\t%s\t%s\t%s\t%s" % (self.beat, self.tick, self.signature[0], self.signature[1])
+        return "MET\t%s\t%s\t%s\t%s" % (self.measure, self.tick, self.signature[0], self.signature[1])
 
 class SpeedSetting(C2sObject):
     length = 0
     speed = 1.0
     def __str__(self):
-        return "SFL\t%s\t%s\t%s\t%s" % (self.beat, self.tick, self.length, self.speed)
+        return "SFL\t%s\t%s\t%s\t%s" % (self.measure, self.tick, self.length, self.speed)
 
 class C2sNote(C2sObject):
     lane = 0
@@ -29,33 +29,33 @@ class C2sNote(C2sObject):
 
 class TapNote(C2sNote):
     def __str__(self):
-        return "TAP\t%s\t%s\t%s\t%s" % (self.beat, self.tick, self.lane, self.width)
+        return "TAP\t%s\t%s\t%s\t%s" % (self.measure, self.tick, self.lane, self.width)
 
 class MineNote(C2sNote):
     def __str__(self):
-        return "MNE\t%s\t%s\t%s\t%s" % (self.beat, self.tick, self.lane, self.width)
+        return "MNE\t%s\t%s\t%s\t%s" % (self.measure, self.tick, self.lane, self.width)
 
 class ChargeNote(C2sNote):
     def __str__(self):
         # Seems to always be "UP"
-        return "CHR\t%s\t%s\t%s\t%s\tUP" % (self.beat, self.tick, self.lane, self.width)
+        return "CHR\t%s\t%s\t%s\t%s\tUP" % (self.measure, self.tick, self.lane, self.width)
     pass
 
 class FlickNote(C2sNote):
     def __str__(self):
         # Seems to always be "Left"
-        return "FLK\t%s\t%s\t%s\t%s\tL" % (self.beat, self.tick, self.lane, self.width)
+        return "FLK\t%s\t%s\t%s\t%s\tL" % (self.measure, self.tick, self.lane, self.width)
     pass
 
 class AirHold(C2sNote):
     length = 0
     def __str__(self):
-        return "AHD\t%s\t%s\t%s\t%s\tTAP\t%s" % (self.beat, self.tick, self.lane, self.width, self.length)
+        return "AHD\t%s\t%s\t%s\t%s\tTAP\t%s" % (self.measure, self.tick, self.lane, self.width, self.length)
 
 class HoldNote(C2sNote):
     length = 0
     def __str__(self):
-        return "HLD\t%s\t%s\t%s\t%s\t%s" % (self.beat, self.tick, self.lane, self.width, self.length)
+        return "HLD\t%s\t%s\t%s\t%s\t%s" % (self.measure, self.tick, self.lane, self.width, self.length)
 
 class SlideNote(C2sNote):
     length = 0
@@ -68,7 +68,7 @@ class SlideNote(C2sNote):
             tag = "SLC"
         else:
             tag = "SLD"
-        return "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (tag, self.beat, self.tick, self.lane, self.width, self.length, self.end_lane, self.end_width)
+        return "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (tag, self.measure, self.tick, self.lane, self.width, self.length, self.end_lane, self.end_width)
 
 class AirNote(C2sNote):
     isUp = True
@@ -90,7 +90,7 @@ class AirNote(C2sNote):
             else:
                 tag = "ADW"
 
-        return "%s\t%s\t%s\t%s\t%s\t%s" % (tag, self.beat, self.tick, self.lane, self.width, self.linkage)
+        return "%s\t%s\t%s\t%s\t%s\t%s" % (tag, self.measure, self.tick, self.lane, self.width, self.linkage)
 
 def from_string(c2s_string:str):
     line = c2s_string.split()
@@ -153,7 +153,7 @@ def from_string(c2s_string:str):
             obj.isUp = False
 
         if isinstance(obj, C2sObject):
-            obj.beat = int(line[1])
+            obj.measure = int(line[1])
             obj.tick = int(line[2])
         if isinstance(obj, C2sNote):
             obj.lane = int(line[3])
@@ -247,7 +247,7 @@ T_PROG_95	81
     if any(filter(lambda d: isinstance(d, MeterSetting), definitions)) == 0:
         setting = MeterSetting()
         setting.signature = (4, 4)
-        setting.beat = 0
+        setting.measure = 0
         setting.tick = 0
         definitions.append(setting)
 

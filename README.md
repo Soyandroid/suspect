@@ -6,7 +6,7 @@ Suspect is a tool to convert back and forth between .sus and .c2s, and generally
 
 - Convert .sus to .c2s
     - The header is placeholder, as CHUNITHM apparently ignores it.
-    - The footer is placeholder, because I am lazy and I'm not sure if CHUNITHM cares about it.
+    - The footer is placeholder, because I am lazy CHUNITHM doesn't seem to care about it.
 - Render .sus to text
     - Basically just serves as a validity check for .sus files
 
@@ -44,3 +44,6 @@ Available commands:
 - The SUS format specification sucks, and not just because it's Google-translated. This format sucks and makes no sense.
 - The SUS format supports dumb things that make no sense and CHUNITHM doesn't support, those things obviously get ignored.
     - NotesEditorForD particularly outputs SUS files that suck, but Seaurchin is fine with them for some reason. The files suck, and I have to make them suck less before I can do anything reasonable with them.
+
+- Many thanks to "hahaluckyme" on Discord for the extremely useful .c2s documentation they wrote, and to everyone cited on their doc.
+- Thanks to everyone who worked on Seaurchin for the SUS format. I don't like it, but I can't deny that it's useful.
